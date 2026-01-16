@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iiSharp</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #000;
+        color: #fff;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        height: 100vh;
+        width: 100vw;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        overflow: hidden;
+        padding: max(10px, 1.5vh);
+        gap: max(10px, 1.5vh);
+      }
+
+      .menu-button {
+        display: none;
+        position: fixed;
+        top: max(10px, 1.5vh);
+        left: max(10px, 1.5vh);
+        z-index: 1002;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        width: min(44px, 5vh);
+        height: min(44px, 5vh);
+        border-radius: 50%;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        font-size: min(24px, 3vh);
+      }
+
+      .sidebar {
+        border-right: 1px solid #333;
+        padding-right: min(40px, 3vh);
+        display: flex;
+        flex-direction: column;
+        gap: min(10px, 1vh);
+        min-width: min(200px, 20vw);
+        max-width: min(300px, 25vw);
+        flex: 0 0 auto;
+      }
+
+      .project-link {
+        color: #fff;
+        text-decoration: none;
+        font-size: clamp(14px, 1.8vh, 18px);
+        padding: min(12px, 1.2vh) min(15px, 1.5vh);
+        transition: all 0.2s;
+        border-radius: min(8px, 0.8vh);
+        border-left: 3px solid transparent;
+        display: block;
+      }
+
+      .project-link:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 3px solid #fff;
+      }
+
+      .link-title {
+        font-weight: 600;
+        margin-bottom: min(4px, 0.4vh);
+      }
+
+      .link-url {
+        font-size: clamp(12px, 1.4vh, 14px);
+        opacity: 0.6;
+      }
+
+      .home-link .project-link {
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 3px solid #fff;
+      }
+
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: min(20px, 2vh);
+        width: 100%;
+        flex-shrink: 0;
+        padding: 0 min(10px, 1vh);
+      }
+
+      .username {
+        font-size: clamp(24px, 4vh, 48px);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        margin-bottom: min(10px, 1vh);
+        line-height: 1.1;
+      }
+
+      .description {
+        font-size: clamp(14px, 1.8vh, 18px);
+        line-height: 1.4;
+        opacity: 0.8;
+        max-width: min(800px, 80vw);
+        margin: 0 auto;
+      }
+
+      .video-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        flex: 1;
+        min-height: 0;
+        padding: 0 min(10px, 1vh);
+      }
+
+      .video-container {
+        width: 100%;
+        background: #111;
+        border-radius: min(12px, 1.2vh);
+        overflow: hidden;
+        aspect-ratio: 16/9;
+        position: relative;
+        flex-shrink: 0;
+        max-width: 95%;
+      }
+
+      #player {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: pointer;
+      }
+
+      .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        width: clamp(40px, 6vh, 80px);
+        height: clamp(40px, 6vh, 80px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        opacity: 0;
+      }
+
+      .play-overlay.visible {
+        opacity: 1;
+      }
+
+      .play-overlay:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: translate(-50%, -50%) scale(1.1);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+
+      .play-icon {
+        font-size: clamp(20px, 2.5vh, 30px);
+        color: white;
+        margin-left: min(5px, 0.5vh);
+      }
+
+      .controls-container {
+        width: 100%;
+        margin-top: min(10px, 1vh);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        max-width: 95%;
+      }
+
+      .video-title {
+        text-align: center;
+        font-size: clamp(14px, 1.6vh, 18px);
+        opacity: 0.8;
+        margin-bottom: min(10px, 1vh);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      .custom-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: clamp(8px, 1.5vh, 20px);
+        width: 100%;
+      }
+
+      .nav-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        width: clamp(30px, 4vh, 44px);
+        height: clamp(30px, 4vh, 44px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: clamp(14px, 1.8vh, 20px);
+        flex-shrink: 0;
+      }
+
+      .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+      }
+
+      .play-btn {
+        width: clamp(36px, 5vh, 60px);
+        height: clamp(36px, 5vh, 60px);
+        font-size: clamp(16px, 2.2vh, 24px);
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 999;
+      }
+
+      /* Dynamiczne dostosowanie dla krótkich ekranów */
+      @media (max-height: 600px) {
+        .username {
+          font-size: clamp(20px, 3vh, 36px);
+        }
+
+        .description {
+          font-size: clamp(12px, 1.5vh, 16px);
+          line-height: 1.3;
+          margin-bottom: min(5px, 0.5vh);
+        }
+
+        .header {
+          margin-bottom: min(10px, 1vh);
+        }
+
+        .play-overlay {
+          width: clamp(30px, 4vh, 60px);
+          height: clamp(30px, 4vh, 60px);
+        }
+
+        .play-icon {
+          font-size: clamp(16px, 2vh, 24px);
+        }
+
+        .nav-btn {
+          width: clamp(24px, 3vh, 36px);
+          height: clamp(24px, 3vh, 36px);
+          font-size: clamp(12px, 1.5vh, 18px);
+        }
+
+        .play-btn {
+          width: clamp(28px, 4vh, 48px);
+          height: clamp(28px, 4vh, 48px);
+          font-size: clamp(14px, 1.8vh, 20px);
+        }
+      }
+
+      @media (max-height: 400px) {
+        .username {
+          font-size: clamp(18px, 2.5vh, 28px);
+        }
+
+        .description {
+          display: none; /* Ukrywamy opis na bardzo krótkich ekranach */
+        }
+
+        .video-title {
+          font-size: clamp(12px, 1.3vh, 16px);
+          margin-bottom: min(5px, 0.5vh);
+        }
+
+        .custom-controls {
+          gap: clamp(6px, 1vh, 15px);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        body {
+          grid-template-columns: 1fr;
+          padding: 8vh max(10px, 1.5vh) max(10px, 1.5vh);
+        }
+
+        .menu-button {
+          display: flex;
+        }
+
+        .sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: min(280px, 80vw);
+          background: #000;
+          border-right: 1px solid #333;
+          padding: 8vh min(30px, 3vh) min(30px, 3vh);
+          transform: translateX(-100%);
+          z-index: 1000;
+          overflow-y: auto;
+          min-width: auto;
+          max-width: none;
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+        }
+
+        .sidebar-overlay.active {
+          display: block;
+        }
+
+        .video-container,
+        .controls-container {
+          max-width: 98%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .username {
+          font-size: clamp(20px, 3.5vh, 36px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="menu-button" id="menuButton">☰</button>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="sidebar">
+      <div class="home-link">
+        <a href="https://iiSharp.github.io" class="project-link">
+          <div class="link-title">iiSharp</div>
+          <div class="link-url">iiSharp.github.io</div>
+        </a>
+      </div>
+
+      <a href="https://iiShxrp.github.io/SB Project." class="project-link">
+        <div class="link-title">SB Project.</div>
+        <div class="link-url">/SB Project.</div>
+      </a>
+
+      <a href="https://www.youtube.com/@iiShxrp" class="project-link">
+        <div class="link-title">YouTube</div>
+        <div class="link-url">@iiShxrp</div>
+      </a>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <div class="username">iiSharp</div>
+        <div class="description">
+          Speed Builders player and founder of SB Project. Passionate coder and
+          music enthusiast.
+        </div>
+      </div>
+
+      <div class="video-section">
+        <div class="video-container">
+          <video id="player"></video>
+          <div class="play-overlay" id="playOverlay">
+            <div class="play-icon">▶</div>
+          </div>
+        </div>
+
+        <div class="controls-container">
+          <div class="video-title" id="videoTitle">Video name</div>
+
+          <div class="custom-controls">
+            <button class="nav-btn" id="prevBtn">←</button>
+            <button class="nav-btn play-btn" id="playPauseBtn">▶</button>
+            <button class="nav-btn" id="nextBtn">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const videos = ["assets/videos/Clips/Speed Builders/метла.mp4"];
+
+      let currentVideo = 0;
+      const player = document.getElementById("player");
+      const videoTitle = document.getElementById("videoTitle");
+      const menuButton = document.getElementById("menuButton");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+      const playOverlay = document.getElementById("playOverlay");
+      const playPauseBtn = document.getElementById("playPauseBtn");
+
+      player.removeAttribute("controls");
+
+      function loadVideo(index) {
+        if (index >= 0 && index < videos.length) {
+          currentVideo = index;
+          const path = videos[index];
+
+          player.src = path;
+          player.load();
+          player.pause();
+
+          const fileName = path.split("/").pop().split(".")[0];
+          videoTitle.textContent = `${fileName}`;
+
+          playOverlay.classList.add("visible");
+          playPauseBtn.textContent = "▶";
+        }
+      }
+
+      function togglePlayPause() {
+        if (videos.length === 0) return;
+
+        if (player.paused) {
+          player.play();
+          playOverlay.classList.remove("visible");
+          playPauseBtn.textContent = "⏸";
+        } else {
+          player.pause();
+          playOverlay.classList.add("visible");
+          playPauseBtn.textContent = "▶";
+        }
+      }
+
+      function fitToWindow() {
+        const videoSection = document.querySelector(".video-section");
+        const videoContainer = document.querySelector(".video-container");
+        const controlsContainer = document.querySelector(".controls-container");
+        const header = document.querySelector(".header");
+        const customControls = document.querySelector(".custom-controls");
+
+        const availableHeight = window.innerHeight;
+        const headerHeight = header.offsetHeight;
+        const controlsHeight = controlsContainer.offsetHeight;
+
+        // Obliczamy maksymalną wysokość filmu
+        let maxVideoHeight =
+          availableHeight - headerHeight - controlsHeight - 40;
+
+        // Sprawdzamy czy kontrolki się mieszczą
+        const minControlsHeight = 80; // Minimalna wysokość dla kontrolek
+        if (maxVideoHeight < 200) {
+          // Jeśli film byłby za mały
+          // Zmniejszamy header
+          document.querySelector(".username").style.fontSize =
+            "clamp(16px, 2.5vh, 32px)";
+          document.querySelector(".description").style.fontSize =
+            "clamp(12px, 1.4vh, 16px)";
+          document.querySelector(".header").style.marginBottom = "5px";
+
+          // Przelicz ponownie
+          maxVideoHeight =
+            availableHeight - header.offsetHeight - controlsHeight - 20;
+        }
+
+        if (maxVideoHeight < 150) {
+          // Jeśli dalej za mało miejsca
+          // Ukryj opis
+          document.querySelector(".description").style.display = "none";
+          maxVideoHeight =
+            availableHeight - header.offsetHeight - controlsHeight - 10;
+        }
+
+        if (maxVideoHeight < 100) {
+          // Jeśli bardzo mało miejsca
+          // Zmniejsz kontrolki
+          customControls.style.gap = "6px";
+          document.querySelectorAll(".nav-btn").forEach((btn) => {
+            btn.style.width = "24px";
+            btn.style.height = "24px";
+            btn.style.fontSize = "12px";
+          });
+          document.querySelector(".play-btn").style.width = "28px";
+          document.querySelector(".play-btn").style.height = "28px";
+          document.querySelector(".play-btn").style.fontSize = "14px";
+          document.querySelector(".video-title").style.fontSize = "12px";
+
+          // Przelicz ponownie
+          maxVideoHeight =
+            availableHeight -
+            header.offsetHeight -
+            controlsContainer.offsetHeight -
+            10;
+        }
+
+        // Obliczamy szerokość na podstawie wysokości (16:9)
+        const maxVideoWidth = maxVideoHeight * (16 / 9);
+        const maxContainerWidth = window.innerWidth * 0.65; // 65% szerokości okna
+
+        const finalWidth = Math.min(maxVideoWidth, maxContainerWidth);
+        const finalHeight = finalWidth * (9 / 16);
+
+        videoContainer.style.maxWidth = `${finalWidth}px`;
+        videoContainer.style.maxHeight = `${finalHeight}px`;
+        controlsContainer.style.maxWidth = `${finalWidth}px`;
+
+        // Sprawdzamy czy wszystko się mieści
+        const totalHeight =
+          header.offsetHeight +
+          finalHeight +
+          controlsContainer.offsetHeight +
+          40;
+        if (totalHeight > availableHeight) {
+          // Skaluj wszystko proporcjonalnie
+          const scale = availableHeight / totalHeight;
+          videoContainer.style.transform = `scale(${scale})`;
+          controlsContainer.style.transform = `scale(${scale})`;
+          videoContainer.style.marginBottom = `${10 * scale}px`;
+        } else {
+          videoContainer.style.transform = "";
+          controlsContainer.style.transform = "";
+          videoContainer.style.marginBottom = "";
+        }
+      }
+
+      document.getElementById("prevBtn").addEventListener("click", () => {
+        if (videos.length === 0) return;
+
+        let newIndex = currentVideo - 1;
+        if (newIndex < 0) newIndex = videos.length - 1;
+        loadVideo(newIndex);
+      });
+
+      document.getElementById("nextBtn").addEventListener("click", () => {
+        if (videos.length === 0) return;
+
+        let newIndex = currentVideo + 1;
+        if (newIndex >= videos.length) newIndex = 0;
+        loadVideo(newIndex);
+      });
+
+      playPauseBtn.addEventListener("click", togglePlayPause);
+      playOverlay.addEventListener("click", togglePlayPause);
+      player.addEventListener("click", togglePlayPause);
+
+      player.addEventListener("play", () => {
+        playOverlay.classList.remove("visible");
+        playPauseBtn.textContent = "⏸";
+      });
+
+      player.addEventListener("pause", () => {
+        playOverlay.classList.add("visible");
+        playPauseBtn.textContent = "▶";
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (videos.length === 0) return;
+
+        if (event.key === "ArrowLeft") {
+          document.getElementById("prevBtn").click();
+        } else if (event.key === "ArrowRight") {
+          document.getElementById("nextBtn").click();
+        } else if (event.key === " " || event.key === "Spacebar") {
+          event.preventDefault();
+          togglePlayPause();
+        }
+      });
+
+      player.addEventListener("ended", () => {
+        document.getElementById("nextBtn").click();
+      });
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("active");
+        sidebarOverlay.classList.toggle("active");
+
+        if (sidebar.classList.contains("active")) {
+          document.body.style.overflow = "hidden";
+        } else {
+          document.body.style.overflow = "";
+        }
+      }
+
+      menuButton.addEventListener("click", toggleSidebar);
+      sidebarOverlay.addEventListener("click", toggleSidebar);
+
+      document.querySelectorAll(".project-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          if (link.hasAttribute("target")) {
+            link.removeAttribute("target");
+          }
+
+          if (window.innerWidth <= 1024) {
+            toggleSidebar();
+          }
+        });
+      });
+
+      if (videos.length > 0) {
+        loadVideo(0);
+      } else {
+        videoTitle.textContent = "No videos available";
+        playOverlay.style.display = "none";
+      }
+
+      player.addEventListener("playing", () => {
+        playOverlay.classList.remove("visible");
+      });
+
+      window.addEventListener("resize", fitToWindow);
+      window.addEventListener("load", fitToWindow);
+      setTimeout(fitToWindow, 100);
+
+      // Obserwuj zmiany w DOM (dla dynamicznego contentu)
+      const observer = new ResizeObserver(fitToWindow);
+      observer.observe(document.body);
+    </script>
+  </body>
+</html>
