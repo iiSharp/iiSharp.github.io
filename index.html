@@ -254,7 +254,6 @@
         z-index: 999;
       }
 
-      /* Dynamiczne dostosowanie dla krótkich ekranów */
       @media (max-height: 600px) {
         .username {
           font-size: clamp(20px, 3vh, 36px);
@@ -298,7 +297,7 @@
         }
 
         .description {
-          display: none; /* Ukrywamy opis na bardzo krótkich ekranach */
+          display: none;
         }
 
         .video-title {
@@ -386,8 +385,8 @@
       <div class="header">
         <div class="username">iiSharp</div>
         <div class="description">
-          Speed Builders player and founder of SB Project. Passionate coder and
-          music enthusiast.
+          Speed Builders player and founder of SB Project.<br />Passionate coder
+          and music enthusiast
         </div>
       </div>
 
@@ -412,7 +411,10 @@
     </div>
 
     <script>
-      const videos = ["assets/videos/Clips/Speed Builders/метла.mp4"];
+      const videos = [
+        "https://iiSharp.github.io/app/assets/videos/метла.mp4",
+        "https://iiSharp.github.io/app/assets/videos/Crossbow.mp4",
+      ];
 
       let currentVideo = 0;
       const player = document.getElementById("player");
@@ -467,37 +469,28 @@
         const headerHeight = header.offsetHeight;
         const controlsHeight = controlsContainer.offsetHeight;
 
-        // Obliczamy maksymalną wysokość filmu
         let maxVideoHeight =
           availableHeight - headerHeight - controlsHeight - 40;
 
-        // Sprawdzamy czy kontrolki się mieszczą
-        const minControlsHeight = 80; // Minimalna wysokość dla kontrolek
+        const minControlsHeight = 80;
         if (maxVideoHeight < 200) {
-          // Jeśli film byłby za mały
-          // Zmniejszamy header
           document.querySelector(".username").style.fontSize =
             "clamp(16px, 2.5vh, 32px)";
           document.querySelector(".description").style.fontSize =
             "clamp(12px, 1.4vh, 16px)";
           document.querySelector(".header").style.marginBottom = "5px";
 
-          // Przelicz ponownie
           maxVideoHeight =
             availableHeight - header.offsetHeight - controlsHeight - 20;
         }
 
         if (maxVideoHeight < 150) {
-          // Jeśli dalej za mało miejsca
-          // Ukryj opis
           document.querySelector(".description").style.display = "none";
           maxVideoHeight =
             availableHeight - header.offsetHeight - controlsHeight - 10;
         }
 
         if (maxVideoHeight < 100) {
-          // Jeśli bardzo mało miejsca
-          // Zmniejsz kontrolki
           customControls.style.gap = "6px";
           document.querySelectorAll(".nav-btn").forEach((btn) => {
             btn.style.width = "24px";
@@ -509,7 +502,6 @@
           document.querySelector(".play-btn").style.fontSize = "14px";
           document.querySelector(".video-title").style.fontSize = "12px";
 
-          // Przelicz ponownie
           maxVideoHeight =
             availableHeight -
             header.offsetHeight -
@@ -517,9 +509,8 @@
             10;
         }
 
-        // Obliczamy szerokość na podstawie wysokości (16:9)
         const maxVideoWidth = maxVideoHeight * (16 / 9);
-        const maxContainerWidth = window.innerWidth * 0.65; // 65% szerokości okna
+        const maxContainerWidth = window.innerWidth * 0.65;
 
         const finalWidth = Math.min(maxVideoWidth, maxContainerWidth);
         const finalHeight = finalWidth * (9 / 16);
@@ -528,14 +519,12 @@
         videoContainer.style.maxHeight = `${finalHeight}px`;
         controlsContainer.style.maxWidth = `${finalWidth}px`;
 
-        // Sprawdzamy czy wszystko się mieści
         const totalHeight =
           header.offsetHeight +
           finalHeight +
           controlsContainer.offsetHeight +
           40;
         if (totalHeight > availableHeight) {
-          // Skaluj wszystko proporcjonalnie
           const scale = availableHeight / totalHeight;
           videoContainer.style.transform = `scale(${scale})`;
           controlsContainer.style.transform = `scale(${scale})`;
@@ -635,7 +624,6 @@
       window.addEventListener("load", fitToWindow);
       setTimeout(fitToWindow, 100);
 
-      // Obserwuj zmiany w DOM (dla dynamicznego contentu)
       const observer = new ResizeObserver(fitToWindow);
       observer.observe(document.body);
     </script>
