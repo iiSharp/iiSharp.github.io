@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Obliczenia na liczbach</title>
+</head>
+<body>
+
+    <input type="text" id="dane" placeholder="Wpisz liczby po przecinku">
+    <button onclick="oblicz()">Policz</button>
+
+    <p id="ilosc">Ilość liczb: </p>
+    <p id="suma">Suma: </p>
+    <p id="max">Największa: </p>
+    <p id="min">Najmniejsza: </p>
+
+    <script>
+        function oblicz() {
+            let tekst = document.getElementById("dane").value;
+            let tablica = tekst.split(",").map(Number);
+
+            let suma = 0;
+            let max = tablica[0];
+            let min = tablica[0];
+
+            for (let i = 0; i < tablica.length; i++) {
+                suma = suma + tablica[i];
+                
+                if (tablica[i] > max) {
+                    max = tablica[i];
+                }
+                
+                if (tablica[i] < min) {
+                    min = tablica[i];
+                }
+            }
+
+            document.getElementById("ilosc").innerHTML = "Ilość liczb: " + tablica.length;
+            document.getElementById("suma").innerHTML = "Suma: " + suma;
+            document.getElementById("max").innerHTML = "Największa: " + max;
+            document.getElementById("min").innerHTML = "Najmniejsza: " + min;
+        }
+    </script>
+
+</body>
+</html>
